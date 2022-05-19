@@ -12,13 +12,26 @@ services:
     ports:
       - 8080:80
   php:
-    image: php:8.1-fpm
+    build: ./container/php
     restart: always
     volumes:
       - ./src:/app
       - ./container/php-log.conf:/usr/local/etc/php-fpm.d/zz-log.conf
+  db:
+    image: mariadb
+    restart: always
+    ports:
+      - 3307:3306
+    logging:
+      driver: none
+    environment:
+      MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: "yes"
+      MARIADB_DATABASE: mariadb
+      MARIADB_USER: mariadb
+      MARIADB_PASSWORD: mariadb
   goaccess:
     image: allinurl/goaccess
+    profiles: ["goaccess"]
     ports:
       - 7890:7890
     volumes:
@@ -28,17 +41,10 @@ services:
     command: /var/log/nginx/access.log --real-time-html -o /html/index.html
   goaccessweb:
     image: nginx
+    profiles: ["goaccess"]
     logging:
       driver: none
     ports:
       - 6060:80
     volumes:
       - ./tmp/html:/usr/share/nginx/html
-  #db:
-  #  image: mariadb
-  #  restart: always
-  #  environment:
-  #    MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: "yes"
-  #    MARIADB_DATABASE: mariadb
-  #    MARIADB_USER: mariadb
-  #    MARIADB_PASSWORD: mariadb
