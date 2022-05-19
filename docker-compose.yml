@@ -6,11 +6,39 @@ services:
       NGINX_ENTRYPOINT_QUIET_LOGS: "true"
     volumes:
       - ./src:/app
-      - ./container/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./container/default.conf:/etc/nginx/conf.d/default.conf
+      - ./container/nginx.conf:/etc/nginx/nginx.conf
+      - ./tmp/log:/var/log/nginx
     ports:
       - 8080:80
   php:
     image: php:8.1-fpm
+    restart: always
     volumes:
       - ./src:/app
       - ./container/php-log.conf:/usr/local/etc/php-fpm.d/zz-log.conf
+  goaccess:
+    image: allinurl/goaccess
+    ports:
+      - 7890:7890
+    volumes:
+      - ./tmp/log:/var/log/nginx:ro
+      - ./container/.goaccessrc:/root/.goaccessrc
+      - ./tmp/html:/html
+    command: /var/log/nginx/access.log --real-time-html -o /html/index.html
+  goaccessweb:
+    image: nginx
+    logging:
+      driver: none
+    ports:
+      - 6060:80
+    volumes:
+      - ./tmp/html:/usr/share/nginx/html
+  #db:
+  #  image: mariadb
+  #  restart: always
+  #  environment:
+  #    MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: "yes"
+  #    MARIADB_DATABASE: mariadb
+  #    MARIADB_USER: mariadb
+  #    MARIADB_PASSWORD: mariadb

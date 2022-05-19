@@ -1,0 +1,3 @@
+time-format %T
+date-format %Y-%m-%d
+log_format %h %^[%dT%t+%^] "%r" %s %b "%R" "%u"
